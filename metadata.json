@@ -1,0 +1,5 @@
+{
+  "name": "Interactive Radar Detector",
+  "description": "An interactive application to visualize radar target detection concepts, including the probability of detection (Pd) and false alarm (Pfa) against Additive White Gaussian Noise (AWGN). Users can control the detection threshold, number of integrated pulses, and Swerling target fluctuation models to see their impact on performance.",
+  "requestFramePermissions": []
+}
