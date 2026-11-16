@@ -1,6 +1,15 @@
-
 import React, { useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Legend } from 'recharts';
+import {
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ReferenceLine,
+    ResponsiveContainer,
+    Legend,
+} from 'recharts';
 import { PlotData } from '../types';
 
 interface DetectionPlotProps {
@@ -9,20 +18,21 @@ interface DetectionPlotProps {
 }
 
 export const DetectionPlot: React.FC<DetectionPlotProps> = ({ plotData, threshold }) => {
-
     const chartData = useMemo(() => {
-        return plotData.noise.map((p, i) => ({
-            x: p.x,
-            noise: p.noise,
-            signal: plotData.signal[i]?.signal || 0
-        }));
-    }, [plotData]);
+        return plotData.noise.map((p, i) => {
+            const signalVal = plotData.signal[i]?.signal ?? 0;
+            const aboveThreshold = p.x >= threshold;
+            return {
+                x: p.x,
+                noise: p.noise,
+                signal: signalVal,
+                noisePfa: aboveThreshold ? p.noise : null,
+                signalPd: aboveThreshold ? signalVal : null,
+            };
+        });
+    }, [plotData, threshold]);
 
-    const thresholdIndex = useMemo(() => {
-        return chartData.findIndex(p => p.x >= threshold);
-    }, [chartData, threshold]);
-
-    if (!chartData || chartData.length === 0) {
+    if (chartData.length === 0) {
         return <div className="flex items-center justify-center h-full text-gray-500">Loading chart data...</div>;
     }
 
@@ -48,58 +58,64 @@ export const DetectionPlot: React.FC<DetectionPlotProps> = ({ plotData, threshol
                     </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
-                <XAxis 
-                    dataKey="x" 
+                <XAxis
+                    dataKey="x"
                     type="number"
                     domain={[0, 'dataMax']}
+                    tickFormatter={(val: number) => val.toFixed(1)}
                     stroke="#a0aec0"
-                    label={{ value: 'Amplitude', position: 'insideBottom', offset: -5, fill: '#a0aec0' }}
+                    label={{ value: 'RMS Amplitude', position: 'insideBottom', offset: -5, fill: '#a0aec0' }}
                 />
-                <YAxis 
+                <YAxis
                     stroke="#a0aec0"
+                    tickFormatter={(val: number) => val.toFixed(2)}
                     label={{ value: 'PDF', angle: -90, position: 'insideLeft', fill: '#a0aec0' }}
                 />
                 <Tooltip
                     contentStyle={{ backgroundColor: '#1a202c', border: '1px solid #4a5568' }}
                     labelStyle={{ color: '#e2e8f0' }}
                     itemStyle={{ color: '#cbd5e0' }}
+                    labelFormatter={(val) => `Amplitude: ${Number(val).toFixed(2)}`}
+                    formatter={(value) => (typeof value === 'number' ? value.toFixed(4) : value)}
                 />
                 <Legend wrapperStyle={{ color: '#e2e8f0' }} />
 
                 {/* Noise PDF */}
-                <Area type="monotone" dataKey="noise" stroke="#f87171" fill="url(#colorNoise)" name="Noise" />
-                
+                <Area type="monotone" dataKey="noise" stroke="#f87171" fill="url(#colorNoise)" name="Noise" isAnimationActive={false} />
+
                 {/* Signal + Noise PDF */}
-                <Area type="monotone" dataKey="signal" stroke="#2dd4bf" fill="url(#colorSignal)" name="Signal + Noise" />
+                <Area type="monotone" dataKey="signal" stroke="#2dd4bf" fill="url(#colorSignal)" name="Signal + Noise" isAnimationActive={false} />
 
                 {/* Shaded Area for Pfa */}
-                <Area 
-                    type="monotone" 
-                    dataKey="noise" 
-                    stroke="none" 
-                    fill="#ef4444" 
-                    fillOpacity={0.5} 
-                    data={chartData.slice(thresholdIndex)}
-                    name="Pfa Area"
+                <Area
+                    type="monotone"
+                    dataKey="noisePfa"
+                    stroke="none"
+                    fill="#ef4444"
+                    fillOpacity={0.45}
+                    legendType="none"
+                    tooltipType="none"
                     activeDot={false}
+                    isAnimationActive={false}
                 />
                 {/* Shaded Area for Pd */}
-                <Area 
-                    type="monotone" 
-                    dataKey="signal" 
-                    stroke="none" 
-                    fill="#14b8a6" 
-                    fillOpacity={0.5} 
-                    data={chartData.slice(thresholdIndex)}
-                    name="Pd Area"
+                <Area
+                    type="monotone"
+                    dataKey="signalPd"
+                    stroke="none"
+                    fill="#14b8a6"
+                    fillOpacity={0.45}
+                    legendType="none"
+                    tooltipType="none"
                     activeDot={false}
+                    isAnimationActive={false}
                 />
 
-                <ReferenceLine 
-                    x={threshold} 
-                    stroke="#facc15" 
-                    strokeWidth={2} 
-                    label={{ value: 'Threshold', position: 'top', fill: '#facc15' }} 
+                <ReferenceLine
+                    x={threshold}
+                    stroke="#facc15"
+                    strokeWidth={2}
+                    label={{ value: 'Threshold', position: 'top', fill: '#facc15' }}
                 />
             </AreaChart>
         </ResponsiveContainer>

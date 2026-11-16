@@ -3,6 +3,7 @@ import { SwerlingModel } from '../types';
 
 interface ControlPanelProps {
     threshold: number;
+    thresholdMax: number;
     setThreshold: (value: number) => void;
     baseSnrDb: number;
     setBaseSnrDb: (value: number) => void;
@@ -15,6 +16,7 @@ interface ControlPanelProps {
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
     threshold,
+    thresholdMax,
     setThreshold,
     baseSnrDb,
     setBaseSnrDb,
@@ -38,7 +40,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                             id="threshold"
                             type="range"
                             min="0"
-                            max="10"
+                            max={thresholdMax}
                             step="0.1"
                             value={threshold}
                             onChange={(e) => setThreshold(Number(e.target.value))}

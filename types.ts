@@ -1,11 +1,12 @@
+export const SwerlingModel = {
+    NON_FLUCTUATING: 'Swerling 0',
+    SWERLING_1: 'Swerling I',
+    SWERLING_2: 'Swerling II',
+    SWERLING_3: 'Swerling III',
+    SWERLING_4: 'Swerling IV',
+} as const;
 
-export enum SwerlingModel {
-    NON_FLUCTUATING = 'Swerling 0',
-    SWERLING_1 = 'Swerling I',
-    SWERLING_2 = 'Swerling II', // Same PDF as I, but different correlation properties
-    SWERLING_3 = 'Swerling III',
-    SWERLING_4 = 'Swerling IV', // Same PDF as III
-}
+export type SwerlingModel = (typeof SwerlingModel)[keyof typeof SwerlingModel];
 
 export interface PlotPoint {
     x: number;
